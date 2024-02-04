@@ -61,14 +61,14 @@ setAnchorPeer() {
   bash ./setAnchorPeer.sh $ORG $CHANNEL_NAME 
 }
 
-# FABRIC_CFG_PATH=./channel
-# CHANNEL_NAME=channel1
-# createChannelTx
-# FABRIC_CFG_PATH=.
-# BLOCKFILE="./config/${CHANNEL_NAME}.block"
-# createChannel
-# joinChannel 1
-# successln "Channel '$CHANNEL_NAME' created"
+FABRIC_CFG_PATH=./channel
+CHANNEL_NAME=channel1
+createChannelTx
+FABRIC_CFG_PATH=.
+BLOCKFILE="./config/${CHANNEL_NAME}.block"
+createChannel
+joinChannel 1
+successln "Channel '$CHANNEL_NAME' created"
 
 FABRIC_CFG_PATH=./channel
 CHANNEL_NAME=channel2

@@ -2,3 +2,6 @@ bin/
 artifacts/channel/organizations/
 config
 *.txt
+*.tx
+*.json
+*.pb
