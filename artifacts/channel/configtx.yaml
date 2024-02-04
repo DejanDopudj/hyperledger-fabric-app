@@ -70,6 +70,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org1MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org1.example.com
+              Port: 7051
+            - Host: peer1.org1.example.com
+              Port: 7051
+            - Host: peer2.org1.example.com
+              Port: 7051
+            - Host: peer3.org1.example.com
+              Port: 7051
 
     - &Org2
         # DefaultOrg defines the organization which is used in the sampleconfig
@@ -97,6 +109,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org2MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org2.example.com
+              Port: 7051
+            - Host: peer1.org2.example.com
+              Port: 7051
+            - Host: peer2.org2.example.com
+              Port: 7051
+            - Host: peer3.org2.example.com
+              Port: 7051
 
     - &Org3
         # DefaultOrg defines the organization which is used in the sampleconfig
@@ -124,6 +148,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org3MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org3.example.com
+              Port: 7051
+            - Host: peer1.org3.example.com
+              Port: 7051
+            - Host: peer2.org3.example.com
+              Port: 7051
+            - Host: peer3.org3.example.com
+              Port: 7051
     - &Org4
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
@@ -150,6 +186,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org4MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org4.example.com
+              Port: 7051
+            - Host: peer1.org4.example.com
+              Port: 7051
+            - Host: peer2.org4.example.com
+              Port: 7051
+            - Host: peer3.org4.example.com
+              Port: 7051
 
 ################################################################################
 #
@@ -369,7 +417,21 @@ Profiles:
                     - *Org2
                     - *Org3
                     - *Org4
-    FourOrgsChannel:
+
+    FourOrgsChannel1:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Org1
+                - *Org2
+                - *Org3
+                - *Org4
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    FourOrgsChannel2:
         Consortium: SampleConsortium
         <<: *ChannelDefaults
         Application:
