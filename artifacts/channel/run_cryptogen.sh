@@ -1,6 +1,6 @@
-  if [ -d "crypto-config" ]; then
-    rm -Rf crypto-config
+  if [ -d "organizations" ]; then
+    rm -Rf organizations
   fi
 
   set -x
-../../bin/cryptogen generate --config=./cryptogen.yaml
+../../bin/cryptogen generate --config=./cryptogen.yaml --output=organizations
