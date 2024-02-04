@@ -11,8 +11,8 @@ services:
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
-      #- FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
-      #- FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/0e729224e8b3f31784c8a93c5b8ef6f4c1c91d9e6e577c45c33163609fe40011_sk
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
     ports:
       - "7054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
@@ -28,8 +28,8 @@ services:
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
-      #- FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
-      #- FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/a7d47efa46a6ba07730c850fed2c1375df27360d7227f48cdc2f80e505678005_sk
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
     ports:
       - "8054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
@@ -46,8 +46,8 @@ services:
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       #NOTE: Filip: we don't have this generated should check what this is used for. This does not exist on the test_network
-      #- FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org3.example.com-cert.pem
-      #- FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/a7d47efa46a6ba07730c850fed2c1375df27360d7227f48cdc2f80e505678005_sk
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org3.example.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
     ports:
       - "9054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
@@ -64,8 +64,8 @@ services:
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       #NOTE: Filip: we don't have this generated should check what this is used for. These env do not exist on the test_network
-      #- FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org3.example.com-cert.pem
-      #- FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/a7d47efa46a6ba07730c850fed2c1375df27360d7227f48cdc2f80e505678005_sk
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org3.example.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
     ports:
       - "10054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
@@ -80,7 +80,7 @@ services:
       - FABRIC_LOGGING_SPEC=debug
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
-      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/config/genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/crypto/orderer/msp
       - ORDERER_GENERAL_TLS_ENABLED=true
@@ -108,7 +108,7 @@ services:
       - CORE_PEER_ID=peer0.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.example.com:7051,peer2.org1.example.com:7051,peer3.org1.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.example.com:7051 #peer2.org1.example.com:7051 peer3.org1.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
     ports:
       - 7051:7051
@@ -127,7 +127,7 @@ services:
       - CORE_PEER_ID=peer1.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer1.org1.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051,peer2.org1.example.com:7051,peer3.org1.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051 #peer2.org1.example.com:7051 peer3.org1.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.example.com:7051
     ports:
       - 7056:7051
@@ -146,13 +146,13 @@ services:
       - CORE_PEER_ID=peer2.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer2.org1.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051,peer1.org1.example.com:7051,peer3.org1.example.com:7051      
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051 peer1.org1.example.com:7051 peer3.org1.example.com:7051      
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.org1.example.com:7051
     ports:
       - 7059:7051
       - 7060:7053
     volumes:
-        - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer3.org1.example.com/:/etc/hyperledger/crypto/peer
+        - ./channel/crypto-config/peerOrganizations/org1.example.com/peers/peer2.org1.example.com/:/etc/hyperledger/crypto/peer
     depends_on:
       - orderer.example.com
 
@@ -165,7 +165,7 @@ services:
       - CORE_PEER_ID=peer3.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer3.org1.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051,peer1.org1.example.com:7051,peer2.org1.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051 peer1.org1.example.com:7051 peer2.org1.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer3.org1.example.com:7051
     ports:
       - 7061:7051
@@ -184,7 +184,7 @@ services:
       - CORE_PEER_ID=peer0.org2.example.com
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org2.example.com:7051,peer2.org2.example.com:7051,peer3.org2.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org2.example.com:7051 peer2.org2.example.com:7051 peer3.org2.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.example.com:7051
     ports:
       - 8051:7051
@@ -203,7 +203,7 @@ services:
       - CORE_PEER_ID=peer1.org2.example.com
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_ADDRESS=peer1.org2.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051,peer2.org2.example.com:7051,peer3.org2.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051 peer2.org2.example.com:7051 peer3.org2.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.example.com:7051
     ports:
       - 8056:7051
@@ -222,7 +222,7 @@ services:
       - CORE_PEER_ID=peer2.org2.example.com
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_ADDRESS=peer2.org2.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051,peer1.org2.example.com:7051,peer3.org2.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051 peer1.org2.example.com:7051 peer3.org2.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.org2.example.com:7051
     ports:
       - 8059:7051
@@ -241,7 +241,7 @@ services:
       - CORE_PEER_ID=peer3.org2.example.com
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_ADDRESS=peer3.org2.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051,peer1.org2.example.com:7051,peer2.org2.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051 peer1.org2.example.com:7051 peer2.org2.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer3.org2.example.com:7051
     ports:
       - 8061:7051
@@ -260,7 +260,7 @@ services:
       - CORE_PEER_ID=peer0.org3.example.com
       - CORE_PEER_LOCALMSPID=Org3MSP
       - CORE_PEER_ADDRESS=peer0.org3.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org3.example.com:7051,peer2.org3.example.com:7051,peer3.org3.example.com:7051      
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org3.example.com:7051 peer2.org3.example.com:7051 peer3.org3.example.com:7051      
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org3.example.com:7051
     ports:
       - 9051:7051
@@ -279,7 +279,7 @@ services:
       - CORE_PEER_ID=peer1.org3.example.com
       - CORE_PEER_LOCALMSPID=Org3MSP
       - CORE_PEER_ADDRESS=peer1.org3.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.example.com:7051,peer2.org3.example.com:7051,peer3.org3.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.example.com:7051 peer2.org3.example.com:7051 peer3.org3.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org3.example.com:7051
     ports:
       - 9056:7051
@@ -298,7 +298,7 @@ services:
       - CORE_PEER_ID=peer2.org3.example.com
       - CORE_PEER_LOCALMSPID=Org3MSP
       - CORE_PEER_ADDRESS=peer2.org3.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.example.com:7051,peer1.org3.example.com:7051,peer3.org3.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.example.com:7051 peer1.org3.example.com:7051 peer3.org3.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.org3.example.com:7051
     ports:
       - 9059:7051
@@ -317,7 +317,7 @@ services:
       - CORE_PEER_ID=peer3.org3.example.com
       - CORE_PEER_LOCALMSPID=Org3MSP
       - CORE_PEER_ADDRESS=peer3.org3.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.example.com:7051,peer1.org3.example.com:7051,peer2.org3.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.example.com:7051 peer1.org3.example.com:7051 peer2.org3.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer3.org3.example.com:7051
     ports:
       - 9061:7051
@@ -336,7 +336,7 @@ services:
       - CORE_PEER_ID=peer0.org4.example.com
       - CORE_PEER_LOCALMSPID=Org4MSP
       - CORE_PEER_ADDRESS=peer0.org4.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org4.example.com:7051,peer2.org4.example.com:7051,peer3.org4.example.com:7051      
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org4.example.com:7051 peer2.org4.example.com:7051 peer3.org4.example.com:7051      
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org4.example.com:7051
     ports:
       - 10051:7051
@@ -355,7 +355,7 @@ services:
       - CORE_PEER_ID=peer1.org4.example.com
       - CORE_PEER_LOCALMSPID=Org4MSP
       - CORE_PEER_ADDRESS=peer1.org4.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:7051,peer2.org4.example.com:7051,peer3.org4.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:7051 peer2.org4.example.com:7051 peer3.org4.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org4.example.com:7051
     ports:
       - 10056:7051
@@ -374,7 +374,7 @@ services:
       - CORE_PEER_ID=peer2.org4.example.com
       - CORE_PEER_LOCALMSPID=Org4MSP
       - CORE_PEER_ADDRESS=peer2.org4.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:7051,peer1.org4.example.com:7051,peer3.org4.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:7051 peer1.org4.example.com:7051 peer3.org4.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.org4.example.com:7051
     ports:
       - 10059:7051
@@ -393,7 +393,7 @@ services:
       - CORE_PEER_ID=peer3.org4.example.com
       - CORE_PEER_LOCALMSPID=Org4MSP
       - CORE_PEER_ADDRESS=peer3.org4.example.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:7051,peer1.org4.example.com:7051,peer2.org4.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.example.com:7051 peer1.org4.example.com:7051 peer2.org4.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer3.org4.example.com:7051
     ports:
       - 10061:7051
