@@ -20,7 +20,8 @@ createChannelTx() {
 }
 
 createChannel() {
-	setGlobals 1
+  ORG=$1
+  setGlobals $ORG
 	local rc=1
 	local COUNTER=1
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
@@ -61,21 +62,21 @@ setAnchorPeer() {
   bash ./setAnchorPeer.sh $ORG $CHANNEL_NAME 
 }
 
-FABRIC_CFG_PATH=./channel
-CHANNEL_NAME=channel1
-createChannelTx
-FABRIC_CFG_PATH=.
-BLOCKFILE="./config/${CHANNEL_NAME}.block"
-createChannel
-joinChannel 1
-successln "Channel '$CHANNEL_NAME' created"
+# FABRIC_CFG_PATH=./channel
+# CHANNEL_NAME=channel1
+# createChannelTx
+# FABRIC_CFG_PATH=.
+# BLOCKFILE="./config/${CHANNEL_NAME}.block"
+# createChannel 1
+# joinChannel 1
+# successln "Channel '$CHANNEL_NAME' created"
 
 FABRIC_CFG_PATH=./channel
 CHANNEL_NAME=channel2
 createChannelTx
 FABRIC_CFG_PATH=.
 BLOCKFILE="./config/${CHANNEL_NAME}.block"
-createChannel
+createChannel 1
 joinChannel 1
 successln "Channel '$CHANNEL_NAME' created"
 

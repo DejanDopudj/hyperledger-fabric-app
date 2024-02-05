@@ -1,6 +1,5 @@
-bin/
 artifacts/channel/organizations/
-config
+artifacts/channel/config
 *.txt
 *.tx
 *.json
