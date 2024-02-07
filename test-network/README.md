@@ -1,5 +1,23 @@
-## Running the test network
+# hyperledger-fabric-app
 
-You can use the `./network.sh` script to stand up a simple Fabric test network. The test network has two peer organizations with one peer each and a single node raft ordering service. You can also use the `./network.sh` script to create channels and deploy chaincode. For more information, see [Using the Fabric test network](https://hyperledger-fabric.readthedocs.io/en/latest/test_network.html). The test network is being introduced in Fabric v2.0 as the long term replacement for the `first-network` sample.
-
-Before you can deploy the test network, you need to follow the instructions to [Install the Samples, Binaries and Docker Images](https://hyperledger-fabric.readthedocs.io/en/latest/install.html) in the Hyperledger Fabric documentation.
+## Running instructions
+1. Install dependencies
+```sh
+./install-fabric.sh -f 2.2.6
+```
+2. Enter the `test-network`:
+```sh
+cd test-network
+```
+3. Down any previously created containers:
+```sh
+./network.sh down
+```
+4. Create components and start the containers:
+```sh
+./network.sh up
+```
+5. Create a channel:
+```sh
+./network.sh createChannel -ca -c channel-name
+```
