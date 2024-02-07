@@ -1,3 +1,6 @@
-bin/
-artifacts/channel/crypto-config/
-genesis.block
+artifacts/channel/organizations/
+artifacts/channel/config
+*.txt
+*.tx
+*.json
+*.pb

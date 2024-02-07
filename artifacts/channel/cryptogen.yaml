@@ -1,4 +1,4 @@
-#NOTE: Filip: File used to generate the crypto-config dir with all of the certicifates,
+#NOTE: Filip: File used to generate the organizations dir with all of the certicifates,
 # we can generate the folder using the cryptogen tool.
 
 OrdererOrgs:

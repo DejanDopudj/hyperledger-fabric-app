@@ -25,7 +25,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: ./crypto-config/ordererOrganizations/example.com/msp
+        MSPDir: ./organizations/ordererOrganizations/example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -52,7 +52,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org1MSP
 
-        MSPDir: ./crypto-config/peerOrganizations/org1.example.com/msp
+        MSPDir: ./organizations/peerOrganizations/org1.example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -60,7 +60,7 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client')"
+                Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client', 'Org1MSP.member')"
             Writers:
                 Type: Signature
                 Rule: "OR('Org1MSP.admin', 'Org1MSP.client')"
@@ -70,6 +70,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org1MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org1.example.com
+              Port: 7051
+            - Host: peer1.org1.example.com
+              Port: 7051
+            - Host: peer2.org1.example.com
+              Port: 7051
+            - Host: peer3.org1.example.com
+              Port: 7051
 
     - &Org2
         # DefaultOrg defines the organization which is used in the sampleconfig
@@ -79,7 +91,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org2MSP
 
-        MSPDir: ./crypto-config/peerOrganizations/org2.example.com/msp
+        MSPDir: ./organizations/peerOrganizations/org2.example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -87,7 +99,7 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org2MSP.admin', 'Org2MSP.peer', 'Org2MSP.client')"
+                Rule: "OR('Org2MSP.admin', 'Org2MSP.peer', 'Org2MSP.client', 'Org1MSP.member')"
             Writers:
                 Type: Signature
                 Rule: "OR('Org2MSP.admin', 'Org2MSP.client')"
@@ -97,6 +109,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org2MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org2.example.com
+              Port: 7051
+            - Host: peer1.org2.example.com
+              Port: 7051
+            - Host: peer2.org2.example.com
+              Port: 7051
+            - Host: peer3.org2.example.com
+              Port: 7051
 
     - &Org3
         # DefaultOrg defines the organization which is used in the sampleconfig
@@ -106,7 +130,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org3MSP
 
-        MSPDir: ./crypto-config/peerOrganizations/org3.example.com/msp
+        MSPDir: ./organizations/peerOrganizations/org3.example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -114,7 +138,7 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org3MSP.admin', 'Org3MSP.peer', 'Org3MSP.client')"
+                Rule: "OR('Org3MSP.admin', 'Org3MSP.peer', 'Org3MSP.client', 'Org1MSP.member')"
             Writers:
                 Type: Signature
                 Rule: "OR('Org3MSP.admin', 'Org3MSP.client')"
@@ -124,6 +148,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org3MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org3.example.com
+              Port: 7051
+            - Host: peer1.org3.example.com
+              Port: 7051
+            - Host: peer2.org3.example.com
+              Port: 7051
+            - Host: peer3.org3.example.com
+              Port: 7051
     - &Org4
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
@@ -132,7 +168,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org4MSP
 
-        MSPDir: ./crypto-config/peerOrganizations/org4.example.com/msp
+        MSPDir: ./organizations/peerOrganizations/org4.example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -140,7 +176,7 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org4MSP.admin', 'Org4MSP.peer', 'Org4MSP.client')"
+                Rule: "OR('Org4MSP.admin', 'Org4MSP.peer', 'Org4MSP.client', 'Org1MSP.member')"
             Writers:
                 Type: Signature
                 Rule: "OR('Org4MSP.admin', 'Org4MSP.client')"
@@ -150,6 +186,18 @@ Organizations:
             Endorsement:
                 Type: Signature
                 Rule: "OR('Org4MSP.peer')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.org4.example.com
+              Port: 7051
+            - Host: peer1.org4.example.com
+              Port: 7051
+            - Host: peer2.org4.example.com
+              Port: 7051
+            - Host: peer3.org4.example.com
+              Port: 7051
 
 ################################################################################
 #
@@ -268,8 +316,8 @@ Orderer: &OrdererDefaults
         Consenters:
         - Host: orderer.example.com
           Port: 7050
-          ClientTLSCert: ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
-          ServerTLSCert: ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+          ClientTLSCert: ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+          ServerTLSCert: ./organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -369,6 +417,7 @@ Profiles:
                     - *Org2
                     - *Org3
                     - *Org4
+
     FourOrgsChannel:
         Consortium: SampleConsortium
         <<: *ChannelDefaults
