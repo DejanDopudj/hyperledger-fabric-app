@@ -16,6 +16,10 @@ export PATH=${PWD}/../bin:$PATH
 export FABRIC_CFG_PATH=${PWD}/configtx
 export VERBOSE=false
 
+export CONFIG_PATH=${PWD}/config
+export ORGANIZATION_NUMBER=4
+export PEER_NUMBER=1
+
 . scripts/utils.sh
 
 # Obtain CONTAINER_IDS and remove them
@@ -143,30 +147,10 @@ function createOrgs() {
     fi
     infoln "Generating certificates using cryptogen tool"
 
-    infoln "Creating Org1 Identities"
+    infoln "Creating Identities"
 
     set -x
-    cryptogen generate --config=./organizations/cryptogen/crypto-config-org1.yaml --output="organizations"
-    res=$?
-    { set +x; } 2>/dev/null
-    if [ $res -ne 0 ]; then
-      fatalln "Failed to generate certificates..."
-    fi
-
-    infoln "Creating Org2 Identities"
-
-    set -x
-    cryptogen generate --config=./organizations/cryptogen/crypto-config-org2.yaml --output="organizations"
-    res=$?
-    { set +x; } 2>/dev/null
-    if [ $res -ne 0 ]; then
-      fatalln "Failed to generate certificates..."
-    fi
-
-    infoln "Creating Orderer Org Identities"
-
-    set -x
-    cryptogen generate --config=./organizations/cryptogen/crypto-config-orderer.yaml --output="organizations"
+    cryptogen generate --config=./organizations/cryptogen/cryptogen.yaml --output="organizations"
     res=$?
     { set +x; } 2>/dev/null
     if [ $res -ne 0 ]; then
@@ -200,13 +184,21 @@ function createOrgs() {
 
     createOrg2
 
+    infoln "Creating Org3 Identities"
+
+    createOrg3
+
+    infoln "Creating Org4 Identities"
+
+    createOrg4
+
     infoln "Creating Orderer Org Identities"
 
     createOrderer
 
   fi
 
-  infoln "Generating CCP files for Org1 and Org2"
+  infoln "Generating CCP files for Orgs"
   ./organizations/ccp-generate.sh
 }
 
@@ -248,7 +240,7 @@ function createConsortium() {
   # Note: For some unknown reason (at least for now) the block file can't be
   # named orderer.genesis.block or the orderer will fail to launch!
   set -x
-  configtxgen -profile TwoOrgsOrdererGenesis -channelID system-channel -outputBlock ./system-genesis-block/genesis.block
+  configtxgen -profile FourOrgsOrdererGenesis -channelID system-channel -outputBlock ./system-genesis-block/genesis.block
   res=$?
   { set +x; } 2>/dev/null
   if [ $res -ne 0 ]; then
@@ -272,10 +264,6 @@ function networkUp() {
   fi
 
   COMPOSE_FILES="-f ${COMPOSE_FILE_BASE}"
-
-  if [ "${DATABASE}" == "couchdb" ]; then
-    COMPOSE_FILES="${COMPOSE_FILES} -f ${COMPOSE_FILE_COUCH}"
-  fi
 
   IMAGE_TAG=$IMAGETAG docker-compose ${COMPOSE_FILES} up -d 2>&1
 
@@ -316,8 +304,7 @@ function deployCC() {
 # Tear down running network
 function networkDown() {
   # stop org3 containers also in addition to org1 and org2, in case we were running sample to add org3
-  docker-compose -f $COMPOSE_FILE_BASE -f $COMPOSE_FILE_COUCH -f $COMPOSE_FILE_CA down --volumes --remove-orphans
-  docker-compose -f $COMPOSE_FILE_COUCH_ORG3 -f $COMPOSE_FILE_ORG3 down --volumes --remove-orphans
+  docker-compose -f $COMPOSE_FILE_BASE -f $COMPOSE_FILE_CA down --volumes --remove-orphans
   # Don't remove the generated artifacts -- note, the ledgers are always removed
   if [ "$MODE" != "restart" ]; then
     # Bring down the network, deleting the volumes
@@ -328,20 +315,23 @@ function networkDown() {
     # remove orderer block and other channel configuration transactions and certs
     docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf system-genesis-block/*.block organizations/peerOrganizations organizations/ordererOrganizations'
     ## remove fabric ca artifacts
-    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/org1/msp organizations/fabric-ca/org1/tls-cert.pem organizations/fabric-ca/org1/ca-cert.pem organizations/fabric-ca/org1/IssuerPublicKey organizations/fabric-ca/org1/IssuerRevocationPublicKey organizations/fabric-ca/org1/fabric-ca-server.db'
-    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/org2/msp organizations/fabric-ca/org2/tls-cert.pem organizations/fabric-ca/org2/ca-cert.pem organizations/fabric-ca/org2/IssuerPublicKey organizations/fabric-ca/org2/IssuerRevocationPublicKey organizations/fabric-ca/org2/fabric-ca-server.db'
-    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/ordererOrg/msp organizations/fabric-ca/ordererOrg/tls-cert.pem organizations/fabric-ca/ordererOrg/ca-cert.pem organizations/fabric-ca/ordererOrg/IssuerPublicKey organizations/fabric-ca/ordererOrg/IssuerRevocationPublicKey organizations/fabric-ca/ordererOrg/fabric-ca-server.db'
-    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf addOrg3/fabric-ca/org3/msp addOrg3/fabric-ca/org3/tls-cert.pem addOrg3/fabric-ca/org3/ca-cert.pem addOrg3/fabric-ca/org3/IssuerPublicKey addOrg3/fabric-ca/org3/IssuerRevocationPublicKey addOrg3/fabric-ca/org3/fabric-ca-server.db'
+    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/org1/msp organizations/fabric-ca/org1'
+    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/org2/msp organizations/fabric-ca/org2'
+    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/org3/msp organizations/fabric-ca/org3'
+    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/org4/msp organizations/fabric-ca/org4'
+    docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/ordererOrg/msp organizations/fabric-ca/ordererOrg'
     # remove channel and script artifacts
     docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf channel-artifacts log.txt *.tar.gz'
   fi
 }
 
+
+
 # Obtain the OS and Architecture string that will be used to select the correct
 # native binaries for your platform, e.g., darwin-amd64 or linux-amd64
 OS_ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
 # Using crpto vs CA. default is cryptogen
-CRYPTO="cryptogen"
+CRYPTO="Certificate Authorities"
 # timeout duration - the duration the CLI should wait for a response from
 # another container before giving up
 MAX_RETRY=5
@@ -360,16 +350,9 @@ CC_COLL_CONFIG="NA"
 # chaincode init function defaults to "NA"
 CC_INIT_FCN="NA"
 # use this as the default docker-compose yaml definition
-COMPOSE_FILE_BASE=docker/docker-compose-test-net.yaml
-# docker-compose.yaml file if you are using couchdb
-COMPOSE_FILE_COUCH=docker/docker-compose-couch.yaml
+COMPOSE_FILE_BASE=docker/docker-compose.yaml
 # certificate authorities compose file
 COMPOSE_FILE_CA=docker/docker-compose-ca.yaml
-# use this as the docker compose couch file for org3
-COMPOSE_FILE_COUCH_ORG3=addOrg3/docker/docker-compose-couch-org3.yaml
-# use this as the default docker-compose yaml definition for org3
-COMPOSE_FILE_ORG3=addOrg3/docker/docker-compose-org3.yaml
-#
 # chaincode language defaults to "NA"
 CC_SRC_LANGUAGE="NA"
 # Chaincode version
