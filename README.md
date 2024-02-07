@@ -12,6 +12,9 @@ bash run_cryptogen.sh
 ```sh
 bash run_configtx.sh
 ```
+```sh
+bash ccp-generate.sh
+```
 3. Start the containers:
 ```sh
 docker compose up
