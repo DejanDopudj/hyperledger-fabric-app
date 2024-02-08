@@ -9,6 +9,7 @@ type RegisterUser struct {
 }
 
 type CreateBankAccount struct {
+	BankID    string   `json:"bankId" validate:"required"`
 	UserID    string   `json:"userId" validate:"required"`
 	AccountID string   `json:"accountId" validate:"required"`
 	Amount    float64  `json:"amount" validate:"required"`
@@ -16,7 +17,15 @@ type CreateBankAccount struct {
 	CardList  []string `json:"cardlist"`
 }
 
-type ManageFunds struct {
+type Payment struct {
+	BankID    string  `json:"bankId" validate:"required"`
+	UserID    string  `json:"userId" validate:"required"`
+	AccountID string  `json:"accountId" validate:"required"`
+	Amount    float64 `json:"amount" validate:"required"`
+	Currency  string  `json:"currency" validate:"required"`
+}
+
+type Withdrawal struct {
 	BankID    string  `json:"bankId" validate:"required"`
 	UserID    string  `json:"userId" validate:"required"`
 	AccountID string  `json:"accountId" validate:"required"`
@@ -24,10 +33,10 @@ type ManageFunds struct {
 }
 
 type TransferFunds struct {
-	UserID        string  `json:"userId" validate:"required"`
-	FromBankID    string  `json:"fromBankId" validate:"required"`
-	FromAccountID string  `json:"fromAccountId" validate:"required"`
-	ToBankID      string  `json:"toBankId" validate:"required"`
-	ToAccountID   string  `json:"toAccountId" validate:"required"`
-	Amount        float64 `json:"amount" validate:"required"`
+	UserID           string  `json:"userId" validate:"required"`
+	BankID           string  `json:"fromBankId" validate:"required"`
+	FromAccountID    string  `json:"fromAccountId" validate:"required"`
+	ToAccountID      string  `json:"toAccountId" validate:"required"`
+	Amount           float64 `json:"amount" validate:"required"`
+	AcceptConversion bool    `json:"acceptConversion" validate:"required"`
 }

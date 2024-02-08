@@ -3,6 +3,7 @@ package src
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -36,6 +37,8 @@ func enrollUser(wallet *gateway.Wallet, user RegisterUser) error {
 		user.Email,
 	)
 
+	log.Println(err.Error())
+
 	if err != nil {
 		wallet.Remove(user.UserID)
 		return fmt.Errorf("Could not create user %s in bank %s", user.UserID, user.BankID)
@@ -52,13 +55,14 @@ func getContract(wallet *gateway.Wallet, bank string, userId string) (*gateway.C
 		"organizations",
 		"peerOrganizations",
 		fmt.Sprintf("org%s.example.com", bank),
-		fmt.Sprintf("connection-org%s.yaml", userId),
+		fmt.Sprintf("connection-org%s.yaml", bank),
 	)
 
 	gw, err := gateway.Connect(
 		gateway.WithConfig(config.FromFile(filepath.Clean(ccpPath))),
 		gateway.WithIdentity(wallet, userId),
 	)
+
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to gateway: %s\n", err)
 	}
