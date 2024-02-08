@@ -62,20 +62,20 @@ func main() {
 
 	contract := network.GetContract("basic")
 
-	// _, err = contract.SubmitTransaction("InitLedger")
-	// if err != nil {
-	// 	fmt.Printf("Failed to submit transaction: %s\n", err)
-	// 	os.Exit(1)
-	// }
-	// fmt.Println("--------------------------------")
-	// fmt.Println("------------------11-------------")
+	_, err = contract.SubmitTransaction("InitLedger")
+	if err != nil {
+		fmt.Printf("Failed to submit transaction: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Println("--------------------------------")
+	fmt.Println("------------------131231-------------")
 
-	// result, err := contract.EvaluateTransaction("QueryAllBanks")
+	// cert, err := contract.EvaluateTransaction("QueryAllBanks")
 	// if err != nil {
 	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
 	// 	os.Exit(1)
 	// }
-	// fmt.Println(string(result))
+	// fmt.Println(string(cert))
 	// fmt.Println("--------------------------------")
 	// fmt.Println("--------------------------------")
 	// fmt.Println("--------------------------------")
@@ -109,12 +109,12 @@ func main() {
 	fmt.Println("--------------------------------")
 	fmt.Println("--------------------------------")
 
-	result, err := contract.EvaluateTransaction("QueryAccount", "1_0")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+	// result, err := contract.EvaluateTransaction("QueryAccount", "1_0")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
 
 	// result, err = contract.SubmitTransaction("MakePayment", "ACCOUNT123", "31","RSD")
 	// if err != nil {
@@ -161,61 +161,61 @@ func main() {
 	// 	os.Exit(1)
 	// }
 	// fmt.Println(string(result))
-	fmt.Println("--------------------------------")
-	fmt.Println("--------------------------------")
-	fmt.Println("---------------000000-----------------")
-	id := "1_1"
-	firstName:= ""
-	lastName:= ""
-	email:= ""
-	bankId:= ""
-	accountId:= ""
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
+	// fmt.Println("---------------000000-----------------")
+	// id := "1_1"
+	// firstName:= ""
+	// lastName:= ""
+	// email:= ""
+	// bankId:= ""
+	// accountId:= ""
 
-	selector := map[string]interface{}{}
-    if id != "" {
-        selector["id"] = id
-    }
-    if firstName != "" {
-        selector["firstName"] = firstName
-    }
-    if lastName != "" {
-        selector["lastName"] = lastName
-    }
-    if email != "" {
-        selector["email"] = email
-    }
-    if bankId != "" {
-        selector["bankId"] = bankId
-    }
-    if accountId != "" {
-		selector["accountIds"] = map[string]interface{}{
-			"$elemMatch": map[string]interface{}{
-				"$eq": accountId,
-			},
-		}
-	}
-    query := map[string]interface{}{
-        "selector": selector,
-    }
+	// selector := map[string]interface{}{}
+    // if id != "" {
+    //     selector["id"] = id
+    // }
+    // if firstName != "" {
+    //     selector["firstName"] = firstName
+    // }
+    // if lastName != "" {
+    //     selector["lastName"] = lastName
+    // }
+    // if email != "" {
+    //     selector["email"] = email
+    // }
+    // if bankId != "" {
+    //     selector["bankId"] = bankId
+    // }
+    // if accountId != "" {
+	// 	selector["accountIds"] = map[string]interface{}{
+	// 		"$elemMatch": map[string]interface{}{
+	// 			"$eq": accountId,
+	// 		},
+	// 	}
+	// }
+    // query := map[string]interface{}{
+    //     "selector": selector,
+    // }
 
-	fmt.Println(query)
+	// fmt.Println(query)
 
-	result, err = contract.EvaluateTransaction("QueryUserFull", "1_1", "", "", "", "", "1")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
-	fmt.Println("-------------00120000-------------------")
-	fmt.Println("--------------------------------")
-	fmt.Println("--------------------------------")
-
-	// result, err = contract.EvaluateTransaction("QueryAccount", "2")
+	// result, err := contract.EvaluateTransaction("QueryUserFull", "1_1", "", "", "", "", "1")
 	// if err != nil {
 	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
 	// 	os.Exit(1)
 	// }
 	// fmt.Println(string(result))
+	// fmt.Println("-------------00120000-------------------")
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
+
+	result, err := contract.EvaluateTransaction("QueryAccount", "2_3")
+	if err != nil {
+		fmt.Printf("Failed to evaluate transaction: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(string(result))
 
 	// cardIds := []string{}
 
@@ -292,7 +292,6 @@ func populateWallet(wallet *gateway.Wallet) error {
 	}
 
 	identity := gateway.NewX509Identity("Org1MSP", string(cert), string(key))
-
 	err = wallet.Put("appUser", identity)
 	if err != nil {
 		return err

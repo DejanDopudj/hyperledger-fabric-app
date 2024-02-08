@@ -7,8 +7,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+    "regexp"
+	"errors"
 	"strconv"
-
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -81,7 +82,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 		if err != nil {
 			return fmt.Errorf("failed to put to world state. %s", err.Error())
 		}
-		account_id := 0
+		account_id := 1
 		for i := 1; i <= 3; i++ {
 			user := User{
 				ID:         bank.ID + "_" + strconv.Itoa(i),
@@ -136,6 +137,28 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	}
 
 	return nil
+}
+
+
+func (s *SmartContract) QueryAllBanks22(ctx contractapi.TransactionContextInterface) (string, error) {
+
+    certificate, err := ctx.GetClientIdentity().GetMSPID()
+    if err != nil {
+        return "", err
+    }
+
+    return certificate, nil
+}
+
+func (s *SmartContract) QueryAllBanks23(ctx contractapi.TransactionContextInterface) (string, error) {
+
+    certificate, err := ctx.GetClientIdentity().GetMSPID()
+    if err != nil {
+        return "", err
+    }
+	permission,_ := ExtractOrgNumber(certificate)
+
+    return permission, nil
 }
 
 func (s *SmartContract) QueryAllBanks(ctx contractapi.TransactionContextInterface) ([]QueryResultBank, error) {
@@ -227,8 +250,28 @@ func (s *SmartContract) QueryAllAccounts(ctx contractapi.TransactionContextInter
 	return results, nil
 }
 
+func (s *SmartContract) compareIds(ctx contractapi.TransactionContextInterface, bankId string) bool {
+	certificate, err := ctx.GetClientIdentity().GetMSPID()
+	
+    if err != nil {
+        return false
+    }
+	permission,err := ExtractOrgNumber(certificate)
+    if err != nil {
+        return false
+    }
+	
+	if permission != bankId {
+		return false
+	}
+	return true
+}
 
 func (s *SmartContract) QueryBank(ctx contractapi.TransactionContextInterface, bankId string) (*Bank, error) {
+	
+	if(!s.compareIds(ctx,bankId)){
+		return nil, fmt.Errorf("User does not have rights to acces bank %s", bankId)
+	}
 
 	bankAsBytes, err := ctx.GetStub().GetState("BANK"+bankId);
 
@@ -246,6 +289,14 @@ func (s *SmartContract) QueryBank(ctx contractapi.TransactionContextInterface, b
 	return bank, nil
 }
 
+func (s *SmartContract) GetBankIdFromAccount(ctx contractapi.TransactionContextInterface, userId string) (string, error) {
+    user, err := s.QueryUser(ctx, userId)
+    if err != nil {
+        return "", err
+    }
+    
+    return user.BankID, nil
+}
 
 func (s *SmartContract) QueryUser(ctx contractapi.TransactionContextInterface, userId string) (*User, error) {
 	userAsBytes, err := ctx.GetStub().GetState("USER"+userId);
@@ -264,8 +315,8 @@ func (s *SmartContract) QueryUser(ctx contractapi.TransactionContextInterface, u
 	return user, nil
 }
 
-
 func (s *SmartContract) QueryAccount(ctx contractapi.TransactionContextInterface, accountId string) (*Account, error) {
+
 	accountAsBytes, err := ctx.GetStub().GetState("ACCOUNT"+accountId);
 
 	if err != nil {
@@ -277,7 +328,16 @@ func (s *SmartContract) QueryAccount(ctx contractapi.TransactionContextInterface
 	}
 
 	account := new(Account)
+
 	_ = json.Unmarshal(accountAsBytes, account)
+
+	bankId, err := s.GetBankIdFromAccount(ctx, account.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("Error %s",err.Error())
+	}
+	if(!s.compareIds(ctx,bankId)){
+		return nil, fmt.Errorf("User does not have rights to acces bank %s", bankId)
+	}
 
 	return account, nil
 }
@@ -714,6 +774,19 @@ func (s *SmartContract) QueryAccountFull(ctx contractapi.TransactionContextInter
     return accounts, nil
 }
 
+func ExtractOrgNumber(input string) (string, error) {
+    pattern := `Org(\d+)MSP`
+
+    regex := regexp.MustCompile(pattern)
+
+    matches := regex.FindStringSubmatch(input)
+
+    if len(matches) < 2 {
+        return "", errors.New("no OrgMSP found")
+    }
+
+	return matches[1], nil
+}
 
 
 
