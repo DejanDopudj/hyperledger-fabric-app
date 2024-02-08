@@ -312,6 +312,11 @@ func (s *SmartContract) QueryUser(ctx contractapi.TransactionContextInterface, u
 	user := new(User)
 	_ = json.Unmarshal(userAsBytes, user)
 
+
+	if(!s.compareIds(ctx,user.BankID)){
+		return nil, fmt.Errorf("User does not have rights to acces bank %s", user.BankID)
+	}
+
 	return user, nil
 }
 
@@ -335,6 +340,7 @@ func (s *SmartContract) QueryAccount(ctx contractapi.TransactionContextInterface
 	if err != nil {
 		return nil, fmt.Errorf("Error %s",err.Error())
 	}
+
 	if(!s.compareIds(ctx,bankId)){
 		return nil, fmt.Errorf("User does not have rights to acces bank %s", bankId)
 	}
@@ -353,11 +359,15 @@ func (s *SmartContract) CreateBank(ctx contractapi.TransactionContextInterface, 
 
 	bankAsBytes, _ := json.Marshal(bank)
 
-	return ctx.GetStub().PutState(bankID, bankAsBytes)
+	return ctx.GetStub().PutState("BANK"+bankID, bankAsBytes)
 }
 
 func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, bankID string, userID string, firstName string, lastName string, email string) error {
-	bankAsBytes, err := ctx.GetStub().GetState(bankID)
+	if(!s.compareIds(ctx,bankID)){
+		return fmt.Errorf("User does not have rights to acces bank %s", bankID)
+	}
+
+	bankAsBytes, err := ctx.GetStub().GetState("BANK"+bankID)
 	if err != nil {
 		return fmt.Errorf("failed to read bank with id %s: %v", bankID, err)
 	}
@@ -376,7 +386,7 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 	if err != nil {
 		return err
 	}
-	if err := ctx.GetStub().PutState(bankID, bankAsBytes); err != nil {
+	if err := ctx.GetStub().PutState("BANK"+bankID, bankAsBytes); err != nil {
 		return fmt.Errorf("failed to update bank with id %s: %v", bankID, err)
 	}
 
@@ -394,19 +404,26 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 		return err
 	}
 
-	return ctx.GetStub().PutState(userID, userAsBytes)
+	return ctx.GetStub().PutState("USER"+userID, userAsBytes)
 }
 
 
 func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterface, userID string, accountID string, amount float64, currency string, cardList string) error {
+	bankId, err := s.GetBankIdFromAccount(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("Error %s",err.Error())
+	}
 
+	if(!s.compareIds(ctx,bankId)){
+		return fmt.Errorf("User does not have rights to acces bank %s", bankId)
+	}
 
 	var cardIds []string
-	err := json.Unmarshal([]byte(cardList), &cardIds)
+	err = json.Unmarshal([]byte(cardList), &cardIds)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshall card ids %s: %v", userID, err)
 	}
-	userAsBytes, err := ctx.GetStub().GetState(userID)
+	userAsBytes, err := ctx.GetStub().GetState("USER"+userID)
 
 	if err != nil {
 		return fmt.Errorf("failed to read user with id %s: %v", userID, err)
@@ -426,7 +443,7 @@ func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterfac
 	if err != nil {
 		return err
 	}
-	if err := ctx.GetStub().PutState(userID, userAsBytes); err != nil {
+	if err := ctx.GetStub().PutState("USER"+userID, userAsBytes); err != nil {
 		return fmt.Errorf("failed to update user with id %s: %v", userID, err)
 	}
 
@@ -443,12 +460,12 @@ func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterfac
 		return err
 	}
 
-	return ctx.GetStub().PutState(accountID, accountAsBytes)
+	return ctx.GetStub().PutState("ACCOUNT"+accountID, accountAsBytes)
 }
 
 
 func (s *SmartContract) MakeWithdrawal(ctx contractapi.TransactionContextInterface, accountID string, amount float64) error {
-	accountAsBytes, err := ctx.GetStub().GetState(accountID)
+	accountAsBytes, err := ctx.GetStub().GetState("ACCOUNT"+accountID)
 	if err != nil {
 		return fmt.Errorf("failed to read account with id %s: %v", accountID, err)
 	}
@@ -459,6 +476,16 @@ func (s *SmartContract) MakeWithdrawal(ctx contractapi.TransactionContextInterfa
 	var account Account
 	if err := json.Unmarshal(accountAsBytes, &account); err != nil {
 		return err
+	
+	}
+
+	bankId, err := s.GetBankIdFromAccount(ctx, account.UserID)
+	if err != nil {
+		return fmt.Errorf("Error %s",err.Error())
+	}
+
+	if(!s.compareIds(ctx,bankId)){
+		return fmt.Errorf("User does not have rights to acces bank %s", bankId)
 	}
 
 	if account.Amount < amount {
@@ -471,7 +498,7 @@ func (s *SmartContract) MakeWithdrawal(ctx contractapi.TransactionContextInterfa
 	if err != nil {
 		return err
 	}
-	if err := ctx.GetStub().PutState(accountID, accountAsBytes); err != nil {
+	if err := ctx.GetStub().PutState("ACCOUNT"+accountID, accountAsBytes); err != nil {
 		return fmt.Errorf("failed to update account with id %s: %v", accountID, err)
 	}
 
@@ -479,7 +506,7 @@ func (s *SmartContract) MakeWithdrawal(ctx contractapi.TransactionContextInterfa
 }
 
 func (s *SmartContract) MakePayment(ctx contractapi.TransactionContextInterface, accountID string, amount float64, currency string) error {
-	accountAsBytes, err := ctx.GetStub().GetState(accountID)
+	accountAsBytes, err := ctx.GetStub().GetState("ACCOUNT"+accountID)
 	if err != nil {
 		return fmt.Errorf("failed to read account with id %s: %v", accountID, err)
 	}
@@ -492,6 +519,16 @@ func (s *SmartContract) MakePayment(ctx contractapi.TransactionContextInterface,
 		return err
 	}
 
+	bankId, err := s.GetBankIdFromAccount(ctx, account.UserID)
+	if err != nil {
+		return fmt.Errorf("Error %s",err.Error())
+	}
+
+	if(!s.compareIds(ctx,bankId)){
+		return fmt.Errorf("User does not have rights to acces bank %s", bankId)
+	}
+
+
 	if account.Currency != currency {
 		return fmt.Errorf("payment currency %s does not match account currency %s", currency, account.Currency)
 	}
@@ -502,7 +539,7 @@ func (s *SmartContract) MakePayment(ctx contractapi.TransactionContextInterface,
 	if err != nil {
 		return err
 	}
-	if err := ctx.GetStub().PutState(accountID, accountAsBytes); err != nil {
+	if err := ctx.GetStub().PutState("ACCOUNT"+accountID, accountAsBytes); err != nil {
 		return fmt.Errorf("failed to update account with id %s: %v", accountID, err)
 	}
 
@@ -510,7 +547,7 @@ func (s *SmartContract) MakePayment(ctx contractapi.TransactionContextInterface,
 }
 
 func (s *SmartContract) CheckCurrencyMatch(ctx contractapi.TransactionContextInterface, account1ID string, account2ID string) (bool, error) {
-	account1AsBytes, err := ctx.GetStub().GetState(account1ID)
+	account1AsBytes, err := ctx.GetStub().GetState("ACCOUNT"+account1ID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read account with id %s: %v", account1ID, err)
 	}
@@ -518,7 +555,7 @@ func (s *SmartContract) CheckCurrencyMatch(ctx contractapi.TransactionContextInt
 		return false, fmt.Errorf("account with id %s does not exist", account1ID)
 	}
 
-	account2AsBytes, err := ctx.GetStub().GetState(account2ID)
+	account2AsBytes, err := ctx.GetStub().GetState("ACCOUNT"+account2ID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read account with id %s: %v", account2ID, err)
 	}
@@ -545,7 +582,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	}
 
 
-	fromAccountAsBytes, err := ctx.GetStub().GetState(fromAccountID)
+	fromAccountAsBytes, err := ctx.GetStub().GetState("ACCOUNT"+fromAccountID)
 	if err != nil {
 		return fmt.Errorf("failed to read sender's account with id %s: %v", fromAccountID, err)
 	}
@@ -554,7 +591,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	}
 
 
-	toAccountAsBytes, err := ctx.GetStub().GetState(toAccountID)
+	toAccountAsBytes, err := ctx.GetStub().GetState("ACCOUNT"+toAccountID)
 	if err != nil {
 		return fmt.Errorf("failed to read receiver's account with id %s: %v", toAccountID, err)
 	}
@@ -570,9 +607,19 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	if err := json.Unmarshal(toAccountAsBytes, &toAccount); err != nil {
 		return err
 	}
+
+	bankId, err := s.GetBankIdFromAccount(ctx, fromAccount.UserID)
+	if err != nil {
+		return fmt.Errorf("Error %s",err.Error())
+	}
+
+	if(!s.compareIds(ctx,bankId)){
+		return fmt.Errorf("User does not have rights to acces bank %s", bankId)
+	}
+
 	currency := toAccount.Currency
 	if !currenciesMatch {
-		conversionRateAsBytes, err := ctx.GetStub().GetState(currency + fromAccount.Currency)
+		conversionRateAsBytes, err := ctx.GetStub().GetState("CURR_"+currency + fromAccount.Currency)
 		if err != nil {
 			return fmt.Errorf("failed to read conversion rate for currencies %s to %s: %v", currency, fromAccount.Currency, err)
 		}
@@ -598,7 +645,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	if err != nil {
 		return err
 	}
-	if err := ctx.GetStub().PutState(fromAccountID, fromAccountAsBytes); err != nil {
+	if err := ctx.GetStub().PutState("ACCOUNT"+fromAccountID, fromAccountAsBytes); err != nil {
 		return fmt.Errorf("failed to update sender's account with id %s: %v", fromAccountID, err)
 	}
 
@@ -606,7 +653,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	if err != nil {
 		return err
 	}
-	if err := ctx.GetStub().PutState(toAccountID, toAccountAsBytes); err != nil {
+	if err := ctx.GetStub().PutState("ACCOUNT"+toAccountID, toAccountAsBytes); err != nil {
 		return fmt.Errorf("failed to update receiver's account with id %s: %v", toAccountID, err)
 	}
 
@@ -666,7 +713,10 @@ func (s *SmartContract) QueryUserFull(ctx contractapi.TransactionContextInterfac
         if err := json.Unmarshal(queryResponse.Value, &user); err != nil {
             return nil, fmt.Errorf("failed to unmarshal user: %v", err)
         }
-        users = append(users, &user)
+
+		if(s.compareIds(ctx,user.BankID)){
+	        users = append(users, &user)
+		}
     }
 
     return users, nil
@@ -721,7 +771,11 @@ func (s *SmartContract) QueryBankFull(ctx contractapi.TransactionContextInterfac
         if err := json.Unmarshal(queryResponse.Value, &bank); err != nil {
             return nil, fmt.Errorf("failed to unmarshal bank: %v", err)
         }
-        banks = append(banks, &bank)
+
+
+		if(s.compareIds(ctx,bank.ID)){
+        	banks = append(banks, &bank)
+		}
     }
 
     return banks, nil
@@ -768,7 +822,15 @@ func (s *SmartContract) QueryAccountFull(ctx contractapi.TransactionContextInter
         if err := json.Unmarshal(queryResponse.Value, &account); err != nil {
             return nil, fmt.Errorf("failed to unmarshal account: %v", err)
         }
-        accounts = append(accounts, &account)
+
+		bankId, err := s.GetBankIdFromAccount(ctx, account.UserID)
+		if err != nil {
+			continue
+		}
+
+		if(s.compareIds(ctx,bankId)){
+        	accounts = append(accounts, &account)
+		}
     }
 
     return accounts, nil
