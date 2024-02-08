@@ -18,7 +18,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-func main() {
+func main1() {
 	os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
 	wallet, err := gateway.NewFileSystemWallet("wallet")
 	if err != nil {
@@ -95,9 +95,6 @@ func main() {
 	// }
 	// fmt.Println(string(result))
 
-
-
-
 	// _, err = contract.SubmitTransaction("CreateUser", "BANK1", "USER123", "Pera", "Peric", "pera@gmail.com")
 	// if err != nil {
 	// 	fmt.Printf("Failed to submit transaction: %s\n", err)
@@ -123,14 +120,12 @@ func main() {
 	// }
 	// fmt.Println(string(result))
 
-
 	// result, err := contract.EvaluateTransaction("CheckCurrencyMatch", "ACCOUNT1", "ACCOUNT123")
 	// if err != nil {
 	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
 	// 	os.Exit(1)
 	// }
 	// fmt.Println(string(result))
-
 
 	// result, err := contract.EvaluateTransaction("QueryAccount", "1")
 	// if err != nil {
@@ -146,14 +141,12 @@ func main() {
 	// }
 	// fmt.Println(string(result))
 
-
 	// result, err = contract.SubmitTransaction("TransferBetweenAccounts", "ACCOUNT123", "ACCOUNT2","100","RSD")
 	// if err != nil {
 	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
 	// 	os.Exit(1)
 	// }
 	// fmt.Println(string(result))
-
 
 	// result, err := contract.EvaluateTransaction("QueryAllUsers")
 	// if err != nil {
@@ -172,31 +165,31 @@ func main() {
 	// accountId:= ""
 
 	// selector := map[string]interface{}{}
-    // if id != "" {
-    //     selector["id"] = id
-    // }
-    // if firstName != "" {
-    //     selector["firstName"] = firstName
-    // }
-    // if lastName != "" {
-    //     selector["lastName"] = lastName
-    // }
-    // if email != "" {
-    //     selector["email"] = email
-    // }
-    // if bankId != "" {
-    //     selector["bankId"] = bankId
-    // }
-    // if accountId != "" {
+	// if id != "" {
+	//     selector["id"] = id
+	// }
+	// if firstName != "" {
+	//     selector["firstName"] = firstName
+	// }
+	// if lastName != "" {
+	//     selector["lastName"] = lastName
+	// }
+	// if email != "" {
+	//     selector["email"] = email
+	// }
+	// if bankId != "" {
+	//     selector["bankId"] = bankId
+	// }
+	// if accountId != "" {
 	// 	selector["accountIds"] = map[string]interface{}{
 	// 		"$elemMatch": map[string]interface{}{
 	// 			"$eq": accountId,
 	// 		},
 	// 	}
 	// }
-    // query := map[string]interface{}{
-    //     "selector": selector,
-    // }
+	// query := map[string]interface{}{
+	//     "selector": selector,
+	// }
 
 	// fmt.Println(query)
 
@@ -241,7 +234,6 @@ func main() {
 	// }
 
 	// result, err = contract.SubmitTransaction("CreateAccount", "USER123", "ACCOUNT123", "5", "RSD", string(cardIdsJSON))
-
 
 	// result, err = contract.SubmitTransaction("createCar", "CAR10", "VW", "Polo", "Grey", "Mary")
 	// if err != nil {
