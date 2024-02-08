@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	// "encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -61,41 +62,171 @@ func main() {
 
 	contract := network.GetContract("basic")
 
-	_, err = contract.SubmitTransaction("InitLedger")
-	if err != nil {
-		fmt.Printf("Failed to submit transaction: %s\n", err)
-		os.Exit(1)
-	}
+	// _, err = contract.SubmitTransaction("InitLedger")
+	// if err != nil {
+	// 	fmt.Printf("Failed to submit transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println("--------------------------------")
+	// fmt.Println("------------------11-------------")
 
-	result, err := contract.EvaluateTransaction("QueryAllBanks")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+	// result, err := contract.EvaluateTransaction("QueryAllBanks")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
 
-	result, err = contract.EvaluateTransaction("QueryAllUsers")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+	// result, err = contract.EvaluateTransaction("QueryAllUsers")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
+	// result, err = contract.EvaluateTransaction("QueryAllAccounts")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
 
-	result, err = contract.EvaluateTransaction("QueryAllAccounts")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+
+
+
+	// _, err = contract.SubmitTransaction("CreateUser", "BANK1", "USER123", "Pera", "Peric", "pera@gmail.com")
+	// if err != nil {
+	// 	fmt.Printf("Failed to submit transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
 
 	fmt.Println("--------------------------------")
+	fmt.Println("--------------------------------")
+	fmt.Println("--------------------------------")
+	fmt.Println("--------------------------------")
 
-	result, err = contract.EvaluateTransaction("queryUser", "1")
+	result, err := contract.EvaluateTransaction("QueryAccount", "1_0")
 	if err != nil {
 		fmt.Printf("Failed to evaluate transaction: %s\n", err)
 		os.Exit(1)
 	}
 	fmt.Println(string(result))
+
+	// result, err = contract.SubmitTransaction("MakePayment", "ACCOUNT123", "31","RSD")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+
+
+	// result, err := contract.EvaluateTransaction("CheckCurrencyMatch", "ACCOUNT1", "ACCOUNT123")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+
+
+	// result, err := contract.EvaluateTransaction("QueryAccount", "1")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+
+	// result, err = contract.EvaluateTransaction("QueryAccount", "2")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+
+
+	// result, err = contract.SubmitTransaction("TransferBetweenAccounts", "ACCOUNT123", "ACCOUNT2","100","RSD")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+
+
+	// result, err := contract.EvaluateTransaction("QueryAllUsers")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+	fmt.Println("--------------------------------")
+	fmt.Println("--------------------------------")
+	fmt.Println("---------------000000-----------------")
+	id := "1_1"
+	firstName:= ""
+	lastName:= ""
+	email:= ""
+	bankId:= ""
+	accountId:= ""
+
+	selector := map[string]interface{}{}
+    if id != "" {
+        selector["id"] = id
+    }
+    if firstName != "" {
+        selector["firstName"] = firstName
+    }
+    if lastName != "" {
+        selector["lastName"] = lastName
+    }
+    if email != "" {
+        selector["email"] = email
+    }
+    if bankId != "" {
+        selector["bankId"] = bankId
+    }
+    if accountId != "" {
+		selector["accountIds"] = map[string]interface{}{
+			"$elemMatch": map[string]interface{}{
+				"$eq": accountId,
+			},
+		}
+	}
+    query := map[string]interface{}{
+        "selector": selector,
+    }
+
+	fmt.Println(query)
+
+	result, err = contract.EvaluateTransaction("QueryUserFull", "1_1", "", "", "", "", "1")
+	if err != nil {
+		fmt.Printf("Failed to evaluate transaction: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(string(result))
+	fmt.Println("-------------00120000-------------------")
+	fmt.Println("--------------------------------")
+	fmt.Println("--------------------------------")
+
+	// result, err = contract.EvaluateTransaction("QueryAccount", "2")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+
+	// cardIds := []string{}
+
+	// // Marshal the slice into a JSON string
+	// cardIdsJSON, err := json.Marshal(cardIds)
+	// if err != nil {
+	// 	// Handle error
+	// }
+
+	// result, err = contract.SubmitTransaction("CreateAccount", "USER123", "ACCOUNT123", "5", "RSD", string(cardIdsJSON))
+
 
 	// result, err = contract.SubmitTransaction("createCar", "CAR10", "VW", "Polo", "Grey", "Mary")
 	// if err != nil {

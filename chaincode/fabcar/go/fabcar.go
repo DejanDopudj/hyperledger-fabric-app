@@ -36,6 +36,7 @@ type User struct {
 	LastName   string   `json:"lastName"`
 	Email      string   `json:"email"`
 	AccountIDs []string `json:"accountIds"`
+	BankID	   string   `json:"bankId"`
 }
 
 type Account struct {
@@ -43,6 +44,7 @@ type Account struct {
 	Amount   float64 `json:"amount"`
 	Currency string  `json:"currency"`
 	CardList []string `json:"cardList"`
+	UserID	 string  `json:"userId"`
 }
 
 type QueryResultBank struct {
@@ -67,10 +69,10 @@ func toInt(s string) int {
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	banks := []Bank{
-		{ID: "1", Headquarters: "New York", YearFounded: 2000, PIB: "123456789", UserIDs: []string{"1", "2", "3"}},
-		{ID: "2", Headquarters: "London", YearFounded: 1995, PIB: "987654321", UserIDs: []string{"4", "5", "6"}},
-		{ID: "3", Headquarters: "Tokyo", YearFounded: 2010, PIB: "456789123", UserIDs: []string{"7", "8", "9"}},
-		{ID: "4", Headquarters: "Berlin", YearFounded: 2005, PIB: "321654987", UserIDs: []string{"10", "11", "12"}},
+		{ID: "1", Headquarters: "New York", YearFounded: 2000, PIB: "123456789", UserIDs: []string{"1_1", "1_2", "1_3"}},
+		{ID: "2", Headquarters: "London", YearFounded: 1995, PIB: "987654321", UserIDs: []string{"2_1", "2_2", "2_3"}},
+		{ID: "3", Headquarters: "Tokyo", YearFounded: 2010, PIB: "456789123", UserIDs: []string{"3_1", "3_2", "3_3"}},
+		{ID: "4", Headquarters: "Berlin", YearFounded: 2005, PIB: "321654987", UserIDs: []string{"4_1", "4_2", "4_3"}},
 	}
 
 	for _, bank := range banks {
@@ -79,37 +81,40 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 		if err != nil {
 			return fmt.Errorf("failed to put to world state. %s", err.Error())
 		}
-
+		account_id := 0
 		for i := 1; i <= 3; i++ {
 			user := User{
-				ID:         strconv.Itoa((i - 1) + (3 * (toInt(bank.ID) - 1)) + 1),
+				ID:         bank.ID + "_" + strconv.Itoa(i),
 				FirstName:  "User" + strconv.Itoa(i),
 				LastName:   "LastName" + strconv.Itoa(i),
 				Email:      "user" + strconv.Itoa(i) + "@example.com",
-				AccountIDs: []string{strconv.Itoa(((i - 1) * 2) + 1), strconv.Itoa(((i - 1) * 2) + 2)},
+				AccountIDs: []string{bank.ID+"_"+strconv.Itoa(account_id), bank.ID+"_"+strconv.Itoa(account_id+1)},
+				BankID:     bank.ID,
 			}
 			userAsBytes, _ := json.Marshal(user)
 			err := ctx.GetStub().PutState("USER"+user.ID, userAsBytes)
 			if err != nil {
 				return fmt.Errorf("failed to put to world state. %s", err.Error())
 			}
+
+			for j := 1; j <= 2; j++ {
+				account := Account{
+					ID:       bank.ID+"_"+strconv.Itoa(account_id),
+					Amount:   1000.0,
+					Currency: "USD",
+					CardList: []string{"card1", "card2"},
+					UserID:   user.ID,
+				}
+				accountAsBytes, _ := json.Marshal(account)
+				err := ctx.GetStub().PutState("ACCOUNT"+account.ID, accountAsBytes)
+				if err != nil {
+					return fmt.Errorf("failed to put to world state. %s", err.Error())
+				}
+				account_id++
+			}
 		}
 
-		for i := 1; i <= 12; i++ {
-			account := Account{
-				ID:       strconv.Itoa(i),
-				Amount:   1000.0,
-				Currency: "USD",
-				CardList: []string{"card1", "card2"},
-			}
-			accountAsBytes, _ := json.Marshal(account)
-			err := ctx.GetStub().PutState("ACCOUNT"+strconv.Itoa(i), accountAsBytes)
-			if err != nil {
-				return fmt.Errorf("failed to put to world state. %s", err.Error())
-			}
-		}
 	}
-
 
 	rates := []CurrencyRates{
 		{Currency1: "EUR", Currency2: "USD", Rate: 1.22},
@@ -165,7 +170,7 @@ func (s *SmartContract) QueryAllBanks(ctx contractapi.TransactionContextInterfac
 
 func (s *SmartContract) QueryAllUsers(ctx contractapi.TransactionContextInterface) ([]QueryResultUser, error) {
 	startKey := "USER0"
-	endKey := "USER999"
+	endKey := "USERZ"
 
 	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
 	if err != nil {
@@ -195,7 +200,7 @@ func (s *SmartContract) QueryAllUsers(ctx contractapi.TransactionContextInterfac
 
 func (s *SmartContract) QueryAllAccounts(ctx contractapi.TransactionContextInterface) ([]QueryResultAccount, error) {
 	startKey := "ACCOUNT0"
-	endKey := "ACCOUNT999"
+	endKey := "ACCOUNTZ"
 
 	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
 	if err != nil {
@@ -291,7 +296,7 @@ func (s *SmartContract) CreateBank(ctx contractapi.TransactionContextInterface, 
 	return ctx.GetStub().PutState(bankID, bankAsBytes)
 }
 
-func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, bankID string, userID string, firstName string, lastName string, email string, accountIds []string) error {
+func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, bankID string, userID string, firstName string, lastName string, email string) error {
 	bankAsBytes, err := ctx.GetStub().GetState(bankID)
 	if err != nil {
 		return fmt.Errorf("failed to read bank with id %s: %v", bankID, err)
@@ -320,7 +325,8 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 		FirstName:  firstName,
 		LastName:   lastName,
 		Email:      email,
-		AccountIDs: accountIds,
+		AccountIDs: []string{},
+		BankID:     bankID,
 	}
 
 	userAsBytes, err := json.Marshal(user)
@@ -332,8 +338,16 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 }
 
 
-func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterface, userID string, accountID string, amount float64, currency string, cardList []string) error {
+func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterface, userID string, accountID string, amount float64, currency string, cardList string) error {
+
+
+	var cardIds []string
+	err := json.Unmarshal([]byte(cardList), &cardIds)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshall card ids %s: %v", userID, err)
+	}
 	userAsBytes, err := ctx.GetStub().GetState(userID)
+
 	if err != nil {
 		return fmt.Errorf("failed to read user with id %s: %v", userID, err)
 	}
@@ -360,7 +374,8 @@ func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterfac
 		ID:       accountID,
 		Amount:   amount,
 		Currency: currency,
-		CardList: cardList,
+		CardList: cardIds,
+		UserID:   userID,
 	}
 
 	accountAsBytes, err := json.Marshal(account)
@@ -462,7 +477,7 @@ func (s *SmartContract) CheckCurrencyMatch(ctx contractapi.TransactionContextInt
 	return account1.Currency == account2.Currency, nil
 }
 
-func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionContextInterface, fromAccountID string, toAccountID string, amount float64, currency string) error {
+func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionContextInterface, fromAccountID string, toAccountID string, amount float64) error {
 
 	currenciesMatch, err := s.CheckCurrencyMatch(ctx, fromAccountID, toAccountID)
 	if err != nil {
@@ -495,7 +510,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	if err := json.Unmarshal(toAccountAsBytes, &toAccount); err != nil {
 		return err
 	}
-
+	currency := toAccount.Currency
 	if !currenciesMatch {
 		conversionRateAsBytes, err := ctx.GetStub().GetState(currency + fromAccount.Currency)
 		if err != nil {
@@ -537,6 +552,168 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 
 	return nil
 }
+
+
+func (s *SmartContract) QueryUserFull(ctx contractapi.TransactionContextInterface, id, firstName, lastName, email, accountId, bankId string) ([]*User, error) {
+    selector := map[string]interface{}{}
+    if id != "" {
+        selector["id"] = id
+    }
+    if firstName != "" {
+        selector["firstName"] = firstName
+    }
+    if lastName != "" {
+        selector["lastName"] = lastName
+    }
+    if email != "" {
+        selector["email"] = email
+    }
+    if bankId != "" {
+        selector["bankId"] = bankId
+    }
+    if accountId != "" {
+		selector["accountIds"] = map[string]interface{}{
+			"$elemMatch": map[string]interface{}{
+				"$eq": accountId,
+			},
+		}
+	}
+    query := map[string]interface{}{
+        "selector": selector,
+    }
+
+    selectorBytes, err := json.Marshal(query)
+	fmt.Println(string(selectorBytes))
+    if err != nil {
+        return nil, fmt.Errorf("failed to marshal selector: %v", err)
+    }
+
+    resultsIterator, err := ctx.GetStub().GetQueryResult(string(selectorBytes))
+    if err != nil {
+        return nil, fmt.Errorf("failed to get query result: %v", err)
+    }
+    defer resultsIterator.Close()
+
+
+    var users []*User
+    for resultsIterator.HasNext() {
+        queryResponse, err := resultsIterator.Next()
+        if err != nil {
+            return nil, fmt.Errorf("failed to iterate query results: %v", err)
+        }
+
+        var user User
+        if err := json.Unmarshal(queryResponse.Value, &user); err != nil {
+            return nil, fmt.Errorf("failed to unmarshal user: %v", err)
+        }
+        users = append(users, &user)
+    }
+
+    return users, nil
+}
+
+
+func (s *SmartContract) QueryBankFull(ctx contractapi.TransactionContextInterface, id, headquarters, pib string, yearFounded int, userId string) ([]*Bank, error) {
+    selector := map[string]interface{}{}
+    if id != "" {
+        selector["id"] = id
+    }
+    if headquarters != "" {
+        selector["headquarters"] = headquarters
+    }
+    if pib != "" {
+        selector["pib"] = pib
+    }
+    if yearFounded != 0 {
+        selector["yearFounded"] = yearFounded
+    }
+    if userId != "" {
+        selector["userIds"] = map[string]interface{}{
+            "$elemMatch": map[string]interface{}{
+                "$eq": userId,
+            },
+        }
+    }
+
+    query := map[string]interface{}{
+        "selector": selector,
+    }
+
+    queryBytes, err := json.Marshal(query)
+    if err != nil {
+        return nil, fmt.Errorf("failed to marshal query: %v", err)
+    }
+
+    resultsIterator, err := ctx.GetStub().GetQueryResult(string(queryBytes))
+    if err != nil {
+        return nil, fmt.Errorf("failed to get query result: %v", err)
+    }
+    defer resultsIterator.Close()
+
+    var banks []*Bank
+    for resultsIterator.HasNext() {
+        queryResponse, err := resultsIterator.Next()
+        if err != nil {
+            return nil, fmt.Errorf("failed to iterate query results: %v", err)
+        }
+
+        var bank Bank
+        if err := json.Unmarshal(queryResponse.Value, &bank); err != nil {
+            return nil, fmt.Errorf("failed to unmarshal bank: %v", err)
+        }
+        banks = append(banks, &bank)
+    }
+
+    return banks, nil
+}
+
+func (s *SmartContract) QueryAccountFull(ctx contractapi.TransactionContextInterface, id string, amount float64, currency, userId string) ([]*Account, error) {
+    selector := map[string]interface{}{}
+    if id != "" {
+        selector["id"] = id
+    }
+    if amount != 0 {
+        selector["amount"] = amount
+    }
+    if currency != "" {
+        selector["currency"] = currency
+    }
+    if userId != "" {
+        selector["userId"] = userId
+    }
+
+    query := map[string]interface{}{
+        "selector": selector,
+    }
+
+    queryBytes, err := json.Marshal(query)
+    if err != nil {
+        return nil, fmt.Errorf("failed to marshal query: %v", err)
+    }
+
+    resultsIterator, err := ctx.GetStub().GetQueryResult(string(queryBytes))
+    if err != nil {
+        return nil, fmt.Errorf("failed to get query result: %v", err)
+    }
+    defer resultsIterator.Close()
+
+    var accounts []*Account
+    for resultsIterator.HasNext() {
+        queryResponse, err := resultsIterator.Next()
+        if err != nil {
+            return nil, fmt.Errorf("failed to iterate query results: %v", err)
+        }
+
+        var account Account
+        if err := json.Unmarshal(queryResponse.Value, &account); err != nil {
+            return nil, fmt.Errorf("failed to unmarshal account: %v", err)
+        }
+        accounts = append(accounts, &account)
+    }
+
+    return accounts, nil
+}
+
 
 
 
