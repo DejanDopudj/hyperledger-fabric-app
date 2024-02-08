@@ -90,7 +90,7 @@ func main() {
 
 	fmt.Println("--------------------------------")
 
-	result, err = contract.EvaluateTransaction("queryUser", "0")
+	result, err = contract.EvaluateTransaction("queryUser", "1")
 	if err != nil {
 		fmt.Printf("Failed to evaluate transaction: %s\n", err)
 		os.Exit(1)

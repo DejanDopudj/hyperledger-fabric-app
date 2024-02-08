@@ -12,6 +12,12 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
+type CurrencyRates struct {
+	Currency1 string  `json:"currency1"`
+	Currency2 string  `json:"currency2"`
+	Rate      float64 `json:"rate"`
+}
+
 type SmartContract struct {
 	contractapi.Contract
 }
@@ -104,10 +110,29 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 		}
 	}
 
+
+	rates := []CurrencyRates{
+		{Currency1: "EUR", Currency2: "USD", Rate: 1.22},
+		{Currency1: "USD", Currency2: "EUR", Rate: 0.82},
+		{Currency1: "USD", Currency2: "RSD", Rate: 99.45},
+		{Currency1: "RSD", Currency2: "USD", Rate: 0.0101},
+		{Currency1: "EUR", Currency2: "RSD", Rate: 120.96},
+		{Currency1: "RSD", Currency2: "EUR", Rate: 0.0083},
+	}
+
+	for _, rate := range rates {
+		rateAsBytes, err := json.Marshal(rate)
+		if err != nil {
+			return fmt.Errorf("failed to marshal rate: %v", err)
+		}
+		if err := ctx.GetStub().PutState("CURR_" + rate.Currency1+rate.Currency2, rateAsBytes); err != nil {
+			return fmt.Errorf("failed to put rate into state: %v", err)
+		}
+	}
+
 	return nil
 }
 
-// QueryAllBanks returns all banks found in world state
 func (s *SmartContract) QueryAllBanks(ctx contractapi.TransactionContextInterface) ([]QueryResultBank, error) {
 	startKey := "BANK0"
 	endKey := "BANKZ"
@@ -267,7 +292,6 @@ func (s *SmartContract) CreateBank(ctx contractapi.TransactionContextInterface, 
 }
 
 func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, bankID string, userID string, firstName string, lastName string, email string, accountIds []string) error {
-	// Retrieve the bank record
 	bankAsBytes, err := ctx.GetStub().GetState(bankID)
 	if err != nil {
 		return fmt.Errorf("failed to read bank with id %s: %v", bankID, err)
@@ -276,16 +300,13 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 		return fmt.Errorf("bank with id %s does not exist", bankID)
 	}
 
-	// Unmarshal bank data
 	var bank Bank
 	if err := json.Unmarshal(bankAsBytes, &bank); err != nil {
 		return err
 	}
 
-	// Add user to the bank
 	bank.UserIDs = append(bank.UserIDs, userID)
 
-	// Update the bank record
 	bankAsBytes, err = json.Marshal(bank)
 	if err != nil {
 		return err
@@ -294,7 +315,6 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 		return fmt.Errorf("failed to update bank with id %s: %v", bankID, err)
 	}
 
-	// Create user record
 	user := User{
 		ID:         userID,
 		FirstName:  firstName,
@@ -313,7 +333,6 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 
 
 func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterface, userID string, accountID string, amount float64, currency string, cardList []string) error {
-	// Retrieve the user record
 	userAsBytes, err := ctx.GetStub().GetState(userID)
 	if err != nil {
 		return fmt.Errorf("failed to read user with id %s: %v", userID, err)
@@ -322,16 +341,13 @@ func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("user with id %s does not exist", userID)
 	}
 
-	// Unmarshal user data
 	var user User
 	if err := json.Unmarshal(userAsBytes, &user); err != nil {
 		return err
 	}
 
-	// Add account to the user
 	user.AccountIDs = append(user.AccountIDs, accountID)
 
-	// Update the user record
 	userAsBytes, err = json.Marshal(user)
 	if err != nil {
 		return err
@@ -340,7 +356,6 @@ func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("failed to update user with id %s: %v", userID, err)
 	}
 
-	// Create account record
 	account := Account{
 		ID:       accountID,
 		Amount:   amount,
@@ -354,6 +369,173 @@ func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterfac
 	}
 
 	return ctx.GetStub().PutState(accountID, accountAsBytes)
+}
+
+
+func (s *SmartContract) MakeWithdrawal(ctx contractapi.TransactionContextInterface, accountID string, amount float64) error {
+	accountAsBytes, err := ctx.GetStub().GetState(accountID)
+	if err != nil {
+		return fmt.Errorf("failed to read account with id %s: %v", accountID, err)
+	}
+	if accountAsBytes == nil {
+		return fmt.Errorf("account with id %s does not exist", accountID)
+	}
+
+	var account Account
+	if err := json.Unmarshal(accountAsBytes, &account); err != nil {
+		return err
+	}
+
+	if account.Amount < amount {
+		return fmt.Errorf("insufficient balance in account %s", accountID)
+	}
+
+	account.Amount -= amount
+
+	accountAsBytes, err = json.Marshal(account)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState(accountID, accountAsBytes); err != nil {
+		return fmt.Errorf("failed to update account with id %s: %v", accountID, err)
+	}
+
+	return nil
+}
+
+func (s *SmartContract) MakePayment(ctx contractapi.TransactionContextInterface, accountID string, amount float64, currency string) error {
+	accountAsBytes, err := ctx.GetStub().GetState(accountID)
+	if err != nil {
+		return fmt.Errorf("failed to read account with id %s: %v", accountID, err)
+	}
+	if accountAsBytes == nil {
+		return fmt.Errorf("account with id %s does not exist", accountID)
+	}
+
+	var account Account
+	if err := json.Unmarshal(accountAsBytes, &account); err != nil {
+		return err
+	}
+
+	if account.Currency != currency {
+		return fmt.Errorf("payment currency %s does not match account currency %s", currency, account.Currency)
+	}
+
+	account.Amount += amount
+
+	accountAsBytes, err = json.Marshal(account)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState(accountID, accountAsBytes); err != nil {
+		return fmt.Errorf("failed to update account with id %s: %v", accountID, err)
+	}
+
+	return nil
+}
+
+func (s *SmartContract) CheckCurrencyMatch(ctx contractapi.TransactionContextInterface, account1ID string, account2ID string) (bool, error) {
+	account1AsBytes, err := ctx.GetStub().GetState(account1ID)
+	if err != nil {
+		return false, fmt.Errorf("failed to read account with id %s: %v", account1ID, err)
+	}
+	if account1AsBytes == nil {
+		return false, fmt.Errorf("account with id %s does not exist", account1ID)
+	}
+
+	account2AsBytes, err := ctx.GetStub().GetState(account2ID)
+	if err != nil {
+		return false, fmt.Errorf("failed to read account with id %s: %v", account2ID, err)
+	}
+	if account2AsBytes == nil {
+		return false, fmt.Errorf("account with id %s does not exist", account2ID)
+	}
+
+	var account1, account2 Account
+	if err := json.Unmarshal(account1AsBytes, &account1); err != nil {
+		return false, err
+	}
+	if err := json.Unmarshal(account2AsBytes, &account2); err != nil {
+		return false, err
+	}
+
+	return account1.Currency == account2.Currency, nil
+}
+
+func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionContextInterface, fromAccountID string, toAccountID string, amount float64, currency string) error {
+
+	currenciesMatch, err := s.CheckCurrencyMatch(ctx, fromAccountID, toAccountID)
+	if err != nil {
+		return fmt.Errorf("failed to check currency match: %v", err)
+	}
+
+
+	fromAccountAsBytes, err := ctx.GetStub().GetState(fromAccountID)
+	if err != nil {
+		return fmt.Errorf("failed to read sender's account with id %s: %v", fromAccountID, err)
+	}
+	if fromAccountAsBytes == nil {
+		return fmt.Errorf("sender's account with id %s does not exist", fromAccountID)
+	}
+
+
+	toAccountAsBytes, err := ctx.GetStub().GetState(toAccountID)
+	if err != nil {
+		return fmt.Errorf("failed to read receiver's account with id %s: %v", toAccountID, err)
+	}
+	if toAccountAsBytes == nil {
+		return fmt.Errorf("receiver's account with id %s does not exist", toAccountID)
+	}
+
+
+	var fromAccount, toAccount Account
+	if err := json.Unmarshal(fromAccountAsBytes, &fromAccount); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(toAccountAsBytes, &toAccount); err != nil {
+		return err
+	}
+
+	if !currenciesMatch {
+		conversionRateAsBytes, err := ctx.GetStub().GetState(currency + fromAccount.Currency)
+		if err != nil {
+			return fmt.Errorf("failed to read conversion rate for currencies %s to %s: %v", currency, fromAccount.Currency, err)
+		}
+		if conversionRateAsBytes == nil {
+			return fmt.Errorf("conversion rate for currencies %s to %s not found", currency, fromAccount.Currency)
+		}
+		var conversionRate CurrencyRates
+		if err := json.Unmarshal(conversionRateAsBytes, &conversionRate); err != nil {
+			return fmt.Errorf("failed to unmarshal conversion rate for currencies %s to %s: %v", currency, fromAccount.Currency, err)
+		}
+
+		amount *= conversionRate.Rate
+	}
+
+	if fromAccount.Amount < amount {
+		return fmt.Errorf("insufficient balance in sender's account %s", fromAccountID)
+	}
+
+	fromAccount.Amount -= amount
+	toAccount.Amount += amount
+
+	fromAccountAsBytes, err = json.Marshal(fromAccount)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState(fromAccountID, fromAccountAsBytes); err != nil {
+		return fmt.Errorf("failed to update sender's account with id %s: %v", fromAccountID, err)
+	}
+
+	toAccountAsBytes, err = json.Marshal(toAccount)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState(toAccountID, toAccountAsBytes); err != nil {
+		return fmt.Errorf("failed to update receiver's account with id %s: %v", toAccountID, err)
+	}
+
+	return nil
 }
 
 
