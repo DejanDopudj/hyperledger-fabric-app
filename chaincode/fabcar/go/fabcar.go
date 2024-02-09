@@ -631,7 +631,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 
 	currency := toAccount.Currency
 	if !currenciesMatch {
-		conversionRateAsBytes, err := ctx.GetStub().GetState("CURR_"+currency + fromAccount.Currency)
+		conversionRateAsBytes, err := ctx.GetStub().GetState("CURR_"+fromAccount.Currency+currency)
 		if err != nil {
 			return fmt.Errorf("failed to read conversion rate for currencies %s to %s: %v", currency, fromAccount.Currency, err)
 		}
