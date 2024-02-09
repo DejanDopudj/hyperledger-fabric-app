@@ -39,6 +39,6 @@ cd ../fabcar/go
 ```
 
 ## Authors
-Dejan Dopuđ E2 2/2023 <br>
-Sanja Petrović E2 4/2023 <br>
-Filip Milošević E2 108/2023
+- Dejan Dopuđ E2 2/2023 <br>
+- Sanja Petrović E2 4/2023 <br>
+- Filip Milošević E2 108/2023
