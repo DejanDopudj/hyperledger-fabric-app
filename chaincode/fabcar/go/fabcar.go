@@ -363,10 +363,10 @@ func (s *SmartContract) CreateBank(ctx contractapi.TransactionContextInterface, 
 }
 
 func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, bankID string, userID string, firstName string, lastName string, email string) error {
-	userAsBytes, err := ctx.GetStub().GetState("USER"+userId);
+	bytes, err := ctx.GetStub().GetState("USER"+userID);
 
-    if userAsBytes != nil {
-        return nil, fmt.Errorf("User %s already exists", "USER"+userId)
+    if bytes != nil {
+        return fmt.Errorf("User %s already exists", "USER"+userID)
     }
 
 	if(!s.compareIds(ctx,bankID)){
@@ -415,10 +415,10 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 
 
 func (s *SmartContract) CreateAccount(ctx contractapi.TransactionContextInterface, userID string, accountID string, amount float64, currency string, cardList string) error {
-	accountAsBytes, err := ctx.GetStub().GetState("ACCOUNT"+accountID);
+    bytes, err := ctx.GetStub().GetState("ACCOUNT"+accountID);
 
-    if accountAsBytes != nil {
-        return nil, fmt.Errorf("Account %s already exists", "ACCOUNT"+accountID)
+    if bytes != nil {
+        return fmt.Errorf("Account %s already exists", "ACCOUNT"+accountID)
     }
 
 	bankId, err := s.GetBankIdFromAccount(ctx, userID)
