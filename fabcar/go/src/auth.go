@@ -3,7 +3,6 @@ package src
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -11,43 +10,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-func enrollUser(wallet *gateway.Wallet, user RegisterUser) error {
-	if wallet.Exists(user.UserID) {
-		return fmt.Errorf("User %s already enrolled", user.UserID)
-	}
-
-	err := populateWallet(wallet, user.BankID, user.UserID)
-	if err != nil {
-		return fmt.Errorf("Failed to populate wallet contents: %s\n", err)
-	}
-
-	contract, err := getContract(wallet, user.BankID, user.UserID)
-
-	if err != nil {
-		wallet.Remove(user.UserID)
-		return fmt.Errorf("Failed to get contract")
-	}
-
-	_, err = contract.SubmitTransaction(
-		"CreateUser",
-		user.BankID,
-		user.UserID,
-		user.FirstName,
-		user.LastName,
-		user.Email,
-	)
-
-	log.Println(err.Error())
-
-	if err != nil {
-		wallet.Remove(user.UserID)
-		return fmt.Errorf("Could not create user %s in bank %s", user.UserID, user.BankID)
-	}
-
-	return nil
-}
-
-func getContract(wallet *gateway.Wallet, bank string, userId string) (*gateway.Contract, error) {
+func getContract(wallet *gateway.Wallet, bank string) (*gateway.Contract, error) {
 	ccpPath := filepath.Join(
 		"..",
 		"..",
@@ -60,7 +23,7 @@ func getContract(wallet *gateway.Wallet, bank string, userId string) (*gateway.C
 
 	gw, err := gateway.Connect(
 		gateway.WithConfig(config.FromFile(filepath.Clean(ccpPath))),
-		gateway.WithIdentity(wallet, userId),
+		gateway.WithIdentity(wallet, fmt.Sprintf("org%s", bank)),
 	)
 
 	if err != nil {
@@ -76,7 +39,7 @@ func getContract(wallet *gateway.Wallet, bank string, userId string) (*gateway.C
 	return network.GetContract("basic"), nil
 }
 
-func populateWallet(wallet *gateway.Wallet, bank string, userId string) error {
+func populateWallet(wallet *gateway.Wallet, bank string) error {
 	credPath := filepath.Join(
 		"..",
 		"..",
@@ -111,7 +74,7 @@ func populateWallet(wallet *gateway.Wallet, bank string, userId string) error {
 
 	identity := gateway.NewX509Identity(fmt.Sprintf("Org%sMSP", bank), string(cert), string(key))
 
-	err = wallet.Put(userId, identity)
+	err = wallet.Put(fmt.Sprintf("org%s", bank), identity)
 	if err != nil {
 		return err
 	}
