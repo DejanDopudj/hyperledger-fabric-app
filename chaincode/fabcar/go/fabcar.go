@@ -628,7 +628,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	if(!s.compareIds(ctx,bankId)){
 		return fmt.Errorf("User does not have rights to acces bank %s", bankId)
 	}
-
+	amountSent := amount
 	currency := toAccount.Currency
 	if !currenciesMatch {
 		conversionRateAsBytes, err := ctx.GetStub().GetState("CURR_"+fromAccount.Currency+currency)
@@ -643,7 +643,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 			return fmt.Errorf("failed to unmarshal conversion rate for currencies %s to %s: %v", currency, fromAccount.Currency, err)
 		}
 
-		amount *= conversionRate.Rate
+		amountSent *= conversionRate.Rate
 	}
 
 	if fromAccount.Amount < amount {
@@ -651,7 +651,7 @@ func (s *SmartContract) TransferBetweenAccounts(ctx contractapi.TransactionConte
 	}
 
 	fromAccount.Amount -= amount
-	toAccount.Amount += amount
+	toAccount.Amount += amountSent
 
 	fromAccountAsBytes, err = json.Marshal(fromAccount)
 	if err != nil {
