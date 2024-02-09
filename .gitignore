@@ -9,3 +9,4 @@ bin/fabric-ca-server
 bin/idemixgen
 bin/orderer
 bin/peer
+chaincode/fabcar/go/vendor
