@@ -283,23 +283,21 @@ chaincodeQuery() {
 }
 
 packageChaincode
-for ((i = 1; i <= $ORGANIZATION_NUMBER; i++)); do
+for ((i = 1; i <= 16; i++)); do
   installChaincode $i
 done
-
 ## approve the definition for orgs
 orgs=""
-for ((i = 1; i <= $ORGANIZATION_NUMBER; i++)); do
+for ((i = 1; i <= 4; i++)); do
   queryInstalled $i
   orgs="$orgs $i"
   approveForMyOrg $i
 done
-
 ## now that we know for sure orgs have approved, commit the definition
 commitChaincodeDefinition $orgs
 
 ## query on orgs to see that the definition committed successfully
-for ((i = 1; i <= $ORGANIZATION_NUMBER; i++)); do
+for ((i = 1; i <= 16; i++)); do
   queryCommitted $i
 done
 
