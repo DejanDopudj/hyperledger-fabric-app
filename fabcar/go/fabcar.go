@@ -98,16 +98,16 @@ func main() {
 
 
 
-	// _, err = contract.SubmitTransaction("CreateUser", "BANK1", "USER123", "Pera", "Peric", "pera@gmail.com")
-	// if err != nil {
-	// 	fmt.Printf("Failed to submit transaction: %s\n", err)
-	// 	os.Exit(1)
-	// }
-
-	fmt.Println("--------------------------------")
-	fmt.Println("--------------------------------")
-	fmt.Println("--------------------------------")
-	fmt.Println("-----------------89---------------")
+	result, err := contract.EvaluateTransaction("QueryAllUsers", "1", "321", "Pera", "Peric", "pera@gmail.com")
+	if err != nil {
+		fmt.Printf("Failed to submit transaction: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(string(result))
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
+	// fmt.Println("--------------------------------")
+	// fmt.Println("-----------------89---------------")
 
 	// result, err := contract.EvaluateTransaction("QueryAccount", "1_0")
 	// if err != nil {
@@ -200,37 +200,37 @@ func main() {
 
 	// fmt.Println(query)
 
-	result, err := contract.EvaluateTransaction("QueryAccount", "1_2")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
-	fmt.Println("-------------00120000-------------------")
+	// result, err := contract.EvaluateTransaction("QueryAccount", "1_2")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
+	// fmt.Println("-------------00120000-------------------")
 
-	result, err = contract.SubmitTransaction("TransferBetweenAccounts", "ACCOUNT1_2", "ACCOUNT1_3", "1000")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+	// result, err = contract.SubmitTransaction("TransferBetweenAccounts", "ACCOUNT1_2", "ACCOUNT1_3", "1000")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
 	// fmt.Println("-------------00120000-------------------")
 	// fmt.Println("--------------------------------")
 	// fmt.Println("--------------------------------")
 
-	result, err = contract.EvaluateTransaction("QueryAccount", "1_2")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+	// result, err = contract.EvaluateTransaction("QueryAccount", "1_2")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
 
-	result, err = contract.EvaluateTransaction("QueryAccount", "1_3")
-	if err != nil {
-		fmt.Printf("Failed to evaluate transaction: %s\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(result))
+	// result, err = contract.EvaluateTransaction("QueryAccount", "1_3")
+	// if err != nil {
+	// 	fmt.Printf("Failed to evaluate transaction: %s\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println(string(result))
 
 	// cardIds := []string{}
 
